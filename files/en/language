@@ -17,7 +17,7 @@ messages:
     report:
       notification: '&e&lNEW REPORT!'
       reported: '&cYou have already reported this player.'
-      success: '\n&a ▪ &aYou reported the player {player}&a. A member of our team has been notified and this player''s behavior will be reviewed.\n\n&a ▪ Abuse of this command may result in punishment.'
+      success: '\n&a ▪ &aYou reported the player {player}&a. A member of our team has been notified and this player''s behavior will be reviewed.\n \n&a ▪ Abuse of this command may result in punishment.\n '
       offline: '&cThis player is not currently online.'
       cannot: '&cYou cannot report.'
       usage: '&cUse: /report [player]'
