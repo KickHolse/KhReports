@@ -12,4 +12,4 @@
 
 **Screenshots**
 
-<img src="https://user-images.githubusercontent.com/68570647/214370883-90f58a6b-0617-48ff-8bdc-180b96e110cf.png" alt="/report player" width="350" title="kkk">
+<img src="https://user-images.githubusercontent.com/68570647/214370883-90f58a6b-0617-48ff-8bdc-180b96e110cf.png" width="350" title="/report okickzin_w">
