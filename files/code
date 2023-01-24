@@ -1,0 +1,210 @@
+# ─────────────────────────────────────────────────── #
+#                    ██ ▄█▀  ██████                   #
+#                    ██▄█▒ ▒██    ▒                   #
+#                   ▓███▄░ ░ ▓██▄                     #
+#                   ▓██ █▄   ▒   ██▒                  #
+#                   ▒██▒ █▄▒██████▒▒                  #
+#                   ▒ ▒▒ ▓▒▒ ▒▓▒ ▒ ░                  #
+#                   ░ ░▒ ▒░░ ░▒  ░ ░                  #
+#                   ░ ░░ ░ ░  ░  ░                    #
+#                   ░  ░         ░                    #
+# ─────────────────────────────────────────────────── #
+options:
+#	KhReports | crafted by Kick Holse
+	version: 1.0
+# ─────────────────────────────────────────────────── #
+import:
+	java.io.File
+	java.io.IOException
+
+# ─────────────────────────────────────────────────── #
+join:
+	delete {%player%.report}
+
+# ─────────────────────────────────────────────────── #
+command report [<offlineplayer>] [<text>]:
+	trigger:
+		arg-1 is set:
+			arg-1 is "confirm":
+				set {_book} to new written book
+				set {_arg} to arg-2
+				set {_player} to first element of {_arg} split at ":"
+				set {_reason} to last element of {_arg} split at ":"
+				set {_title} to text component with replacer "{reason}" and "{player}" and "\n" with {_reason} and khcore_roles({_player} parsed as player, "get", "colored") and newline in yaml value "book.confirm.header" from "ks.reports.language"
+				set {_cyes} to text component with replacer "\n" with newline in yaml value "book.confirm.continue.format" from "ks.reports.language"
+				add click event with action RUN_COMMAND with execute "/report %{_player}% %{_reason}%" to text component {_cyes}
+				add hover event with action SHOW_TEXT with text replacer "{player}" and "{reason}" with khcore_roles({_player} parsed as player, "get", "colored") and {_reason} in yaml value "book.confirm.continue.tooltip" from "ks.reports.language" to text component {_cyes}
+				set {_cno} to text component with replacer "\n" with newline in yaml value "book.confirm.cancel.format" from "ks.reports.language"
+				add click event with action RUN_COMMAND with execute "/a213u01s9adh" to text component {_cno}
+				add hover event with action SHOW_TEXT with text replacer "{player}" and "{reason}" with khcore_roles({_player} parsed as player, "get", "colored") and {_reason} in yaml value "book.confirm.cancel.tooltip" from "ks.reports.language" to text component {_cno}
+				add text component {_title} and {_cyes} and {_cno} to book {_book}
+				open book {_book} to player
+				stop
+			arg-1 is online:
+				"%arg-1%" != "%player%":
+					"%arg-1%" != "%{%player%.report}%":
+						arg-2 is not set:
+							set {_book} to new written book
+							set {_title} to text component with replacer "{player}" and "\n" with khcore_roles(arg-1, "get", "colored") and newline in yaml value "book.header" from "ks.reports.language"
+							add {_title} to {_s::*}
+							loop yaml list "options.reasons" from "ks.reports.language":
+								set {_c%loop-value%} to text component with replacer "{reason}" and "\n" with "%loop-value%" and newline in yaml value "book.format" from "ks.reports.language"
+								add click event with action RUN_COMMAND with execute "/report confirm %arg-1%:%loop-value%" to text component {_c%loop-value%}
+								add hover event with action SHOW_TEXT with text replacer "{player}" and "{reason}" with khcore_roles(arg-1, "get", "colored") and "%loop-value%" in yaml value "book.tooltip" from "ks.reports.language" to text component {_c%loop-value%}
+								add {_c%loop-value%} to {_s::*}
+							set {_cno} to text component with replacer "\n" with newline in yaml value "book.cancel.format" from "ks.reports.language"
+							add click event with action RUN_COMMAND with execute "/a213u01s9adh" to text component {_cno}
+							add hover event with action SHOW_TEXT with text replacer "{player}" with khcore_roles(arg-1, "get", "colored") in yaml value "book.confirm.cancel.tooltip" from "ks.reports.language" to text component {_cno}
+							add text component {_s::*} and {_cno} to book {_book}
+							open book {_book} to player
+						else:
+							send replacer "{player}" and "\n" with khcore_roles(arg-1, "get", "colored") and newline in yaml value "messages.command.report.success" from "ks.reports.language" to player
+							set {%player%.report} to "%arg-1%"
+							add_report(arg-1, arg-2)
+					else:
+						send yaml value "messages.command.report.reported" from "ks.reports.language" to player
+				else:
+					send yaml value "messages.command.report.cannot" from "ks.reports.language"
+			else:
+				send yaml value "messages.command.report.offline" from "ks.reports.language"
+		else:
+			send yaml value "messages.command.report.usage" from "ks.reports.language"
+command reports:
+	trigger:
+		player has permission "khreports.cmd.reports" or "khreports.cmd.*" or "khreports.*":
+			list_reports(player)
+		else:
+			send yaml value "messages.command.reports.no_permission" from "ks.reports.language"
+command:
+	command is "a213u01s9adh":
+		cancel event
+		close player's inventory
+	loop yaml list "messages.command.report.aliases" from "ks.reports.language":
+		loop-value = command:
+			cancel event
+			set {_x::*} to arguments
+			size of {_x::*} = 0:
+				make player execute command "report"
+			else:
+				make player execute command "report %arguments%"
+
+# ─────────────────────────────────────────────────── #
+function add_report(p: player, reason: text):
+	set {_f} to "plugins/KhReports/reports/%uuid of {_p}%.yml"
+	fileExists({_f}) != true:
+		create file {_f}
+		set yaml value "%uuid of {_p}%.name" from file "%{_f}%" to {_p}'s display name
+		set yaml value "%uuid of {_p}%.last_viewer" from file "%{_f}%" to ""
+		add "%{_reason}% : 1" to yaml list "%uuid of {_p}%.reports" from file "%{_f}%"
+	else:
+		set {_list::*} to yaml list "%uuid of {_p}%.reports" from file "%{_f}%"
+		size of {_list::*} > 0:
+			set {_i} to 0
+			loop {_list::*}:
+				set {_loop} to loop-value
+				first element of {_loop} split at " : " is {_reason}:
+					set {_i} to last element of {_loop} split at " : " parsed as int
+					remove loop-value from yaml list "%uuid of {_p}%.reports" from file "%{_f}%"
+					exit loop
+			add "%{_reason}% : %{_i}+1%" to yaml list "%uuid of {_p}%.reports" from file "%{_f}%"
+		else:
+			add "%{_reason}% : 1" to yaml list "%uuid of {_p}%.reports" from file "%{_f}%"
+	loop all players:
+		loop-player has permission "khreports.notification" or "khreports.*":
+			send action bar yaml value "messages.command.report.notification" from "ks.reports.language" to loop-player
+			play sound "NOTE_PLING" with 1 and 15 to loop-player
+function list_reports(p: player, page: number = 0):
+	set {_f} to new File("plugins/KhReports/reports")
+	set {_f} to {_f}.list()
+	set {_f} to "%{_f}%"
+	set {_reports::*} to {_f} split at ", "
+	"%{_reports::*}%" == "":
+		send yaml value "messages.command.reports.no_reports" from "ks.reports.language" to {_p}
+		stop
+	set {_pageStart} to 21*{_page}
+	set {_i} to 1
+	set {_rows} to 4
+	set {_slot} to 10
+	size of {_reports::*} is between 8 and 14:
+		set {_rows} to 5
+	size of {_reports::*} > 14:
+		set {_rows} to 6
+	open chest inventory with {_rows} rows named yaml value "menu.title" from "ks.reports.language" to {_p}
+	wait a tick
+	loop {_reports::*}:
+		(loop-index parsed as integer) > {_pageStart}
+		set {_loop} to replacer ".yml" with "" in loop-value
+		set {_name} to yaml value "%{_loop}%.name" from file "plugins/KhReports/reports/%{_loop}%.yml"
+		set {_list::*} to yaml list "%{_loop}%.reports" from file "plugins/KhReports/reports/%{_loop}%.yml"
+		set {_view} to yaml value "%{_loop}%.last_viewer" from file "plugins/KhReports/reports/%{_loop}%.yml"
+		{_view} is "":
+			set {_view} to yaml value "menu.replaces.nobody_saw" from "ks.reports.language"
+		set {_lastv} to replacer "{last_viewer}" with {_view} in yaml value "menu.replaces.last_viewer" from "ks.reports.language"
+		set {_count} to 0
+		delete {_x::*}
+		loop {_list::*}:
+			set {_report} to loop-value-2
+			set {_report::*} to {_report} split at " : "
+			add {_report::2} parsed as int to {_count}
+			size of {_x::*} <= 5:
+				add replacer "{count}" and "{reason}" with "%{_report::2}%" and "%{_report::1}%" in yaml value "menu.format" from "ks.reports.language" to {_x::*}
+		set {_qwe} to "&7%{_name}%"
+		set {_status} to yaml value "menu.replaces.offline" from "ks.reports.language"
+		{_name} parsed as offlineplayer is online:
+			set {_qwe} to khcore_roles({_name} parsed as offlineplayer, "get", "colored")
+			set {_status} to yaml value "menu.replaces.teleport" from "ks.reports.language"
+		make a gui slot {_slot} of {_p} with deserializeItem(replacer "{reports}" and "&a{player}" and "{player}" and "{total}" and "{teleport}" and "{last_viewer}" with replacer ", " and "and " with "\n" and "\n" in "%{_x::*}%" and {_qwe} and "%{_name}%" and "%{_count}%" and {_status} and {_lastv} in yaml value "menu.icon" from "ks.reports.language", {_p}) to run:
+			"%click type%" contains "RIGHT":
+				delete file "plugins/KhReports/reports/%{_loop}%.yml"
+				remove "%{_loop}%.yml" from {_reports::*}
+				"%size of {_reports::*}%" == "0":
+					close {_p}'s inventory
+				else:
+					list_reports({_p}, {_page})
+			else:
+				{_name} parsed as player is online:
+					set yaml value "%{_loop}%.last_viewer" from file "plugins/KhReports/reports/%{_loop}%.yml" to khcore_roles({_p}, "get", "prefixed")
+					teleport {_p} to {_name} parsed as player
+				else:
+					send yaml value "messages.command.reports.offline" from "ks.reports.language" to {_p}
+		add 1 to {_slot}
+		{_slot} is 17 or 26:
+			add 2 to {_slot}
+		{_slot} = ((35*{_i})):
+			exit loop
+
+	set {_countreport} to 0
+	loop {_reports::*}:
+		set {_loop} to replacer ".yml" with "" in loop-value
+		set {_list::*} to yaml list "%{_loop}%.reports" from file "plugins/KhReports/reports/%{_loop}%.yml"
+		loop {_list::*}:
+			set {_report} to loop-value-2
+			add last element of {_report} split at " : " parsed as int to {_countreport}
+		
+	make a gui slot 9*{_rows}-5 of {_p} with deserializeItem(replacer "{players}" and "{complaints}" with "%size of {_reports::*}%" and "%{_countreport}%" in yaml value "menu.clear" from "ks.reports.language", {_p}) to run:
+		set {_f} to new File("plugins/KhReports/reports")
+		set {_f} to {_f}.list()
+		set {_f} to "%{_f}%"
+		set {_reportss::*} to {_f} split at ", "
+		loop {_reportss::*}:
+			delete file "plugins/KhReports/reports/%loop-value%"
+			close {_p}'s inventory
+
+	(amount of {_reports::*}) > {_pageStart} + 21:
+		make a gui slot 9*{_rows}-1 of {_p} with deserializeItem(replacer "{next_page}" with "%{_page}+1+1%" in yaml value "options.pagged.next_page" from "ks.reports.language", {_p}) to run:
+			list_reports({_p}, ({_page} + 1))
+	{_page} > 0:
+		make a gui slot 9*{_rows}-9 of {_p} with deserializeItem(replacer "{previous_page}" with "%{_page}+1-1%" in yaml value "options.pagged.previous_page" from "ks.reports.language", {_p}) to run:
+			list_reports({_p}, ({_page} - 1))
+
+# ─────────────────────────────────────────────────── #
+load:
+	fileExists("plugins/KhReports/language.yml") != true:
+		create file "plugins/KhReports/reports/language.yml"
+		delete file "plugins/KhReports/reports/language.yml"
+		download from "https://raw.githubusercontent.com/KickHolse/KhReports/main/files/en/language" to file "plugins/KhReports/language.yml"
+	yaml "ks.reports.language" is loaded:
+		unload yaml "ks.reports.language"
+	load yaml "plugins/KhReports/language.yml" as "ks.reports.language"
+	text from "https://api.spigotmc.org/legacy/update.php?resource=495432" != "{@version}":
+		send "[KhReports] &cYou are not using the latest version of skript." to console
