@@ -1,0 +1,55 @@
+# crafted by kick#0808
+# www.kskripts.tk
+
+options:
+  reasons:
+  - 'Hack'
+  - 'Inappropriate nick'
+  - 'Inappropriate skin'
+  - 'Team or Alliance'
+  - 'Discrimination'
+  pagged:
+    next_page: 'LIGHT_GREEN_DYE : 1 : nome>&aNext page : desc>&7Go to page {next_page}.'
+    previous_page: 'GRAY_DYE : 1 : nome>&aPrevious page : desc>&7Back to page {previous_page}.'
+
+messages:
+  command:
+    report:
+      notification: '&e&lNEW REPORT!'
+      reported: '&cYou have already reported this player.'
+      success: '\n&a ▪ &aYou reported the player {player}&a. A member of our team has been notified and this player''s behavior will be reviewed.\n\n&a ▪ Abuse of this command may result in punishment.'
+      offline: '&cThis player is not currently online.'
+      cannot: '&cYou cannot report.'
+      usage: '&cUse: /report [player]'
+      aliases:
+      - 'reportar'
+    reports:
+      no_permission: '&cYou don''t have permission to run this command.'
+      no_reports: '&cThere are no reports available.'
+      offline: '&cThis player is not currently online.'
+book:
+  header: '&5&l        REPORTING\n\nAccused: &6{player}\nChoose a reason:\n\n'
+  format: '&8 ▪ &7{reason}\n'
+  tooltip: '&eReporting {player}&e by {reason}.'
+  cancel:
+    format: '\n\n&c&lCANCEL COMPLAINT'
+    tooltip: '&eClick to &ccancel &ethe action.'
+  confirm:
+    header: 'Are you about to report {player}&0 for {reason}\n\n\n\n\n\n'
+    continue:
+      format: '&a&lCONFIRM\n'
+      tooltip: '&eClick to &aconfirm &ethe action.'
+    cancel:
+      format: '&c&lCANCEL'
+      tooltip: '&eClick to &ccancel &ethe action.'
+
+menu:
+  title: 'Reported Players'
+  format: '&f ▪ x{count} {reason}'
+  icon: 'HEAD:3 : dono>{player} : nome>&a{player} : desc>{last_viewer}\n\n&7Reports ({total}):\n{reports}\n\n{teleport}\n&eRight click to delete.'
+  clear: 'BARRIER : nome>&aDelete all reports : desc>&8Delete all reports with one click.\n\n&7Total players: &f{players}\n&7Total complaints: &f{complaints}\n\n&e➟ Click to delete all reports.'
+  replaces:
+    last_viewer: '&7Seen by:\n&f ▪ {last_viewer}'
+    nobody_saw: 'Nobody saw'
+    teleport: '&aLeft click to teleport.'
+    offline: '&cThis player is not currently online.'
